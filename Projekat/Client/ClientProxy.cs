@@ -16,20 +16,23 @@ namespace Client
             factory = this.CreateChannel();
         }
 
-        public void Connect()
+        public byte[] Connect(byte[] publicKey, byte[] iv)
         {
+            byte[] serverPublicKey = null;
             try
             {
-                factory.Connect();
+                serverPublicKey = factory.Connect(publicKey, iv);
                 Console.WriteLine("Connect allowed!\n");
             }
             catch (Exception e)
             {
                 Console.WriteLine("Error: {0}", e.Message);
             }
+
+            return serverPublicKey;
         }
 
-        public void RunService(string ip, string port, string protocol)
+        public void RunService(byte[] ip, byte[] port, byte[] protocol)
         {
             try
             {

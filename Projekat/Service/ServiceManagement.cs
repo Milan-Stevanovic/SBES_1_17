@@ -10,22 +10,35 @@ namespace Service
 {
     public class ServiceManagement : IServiceManagement
     {
+        public byte[] ClientPublicKey { get; set; }
+        public byte[] ClientIV { get; set; }
+        public DiffieHellman diffieHellman = new DiffieHellman();
+
         [PrincipalPermission(SecurityAction.Demand, Role = "ExchangeSessionKey")]
-        public void Connect()
+        public byte[] Connect(byte[] publicKey, byte[] iv)
         {
+            ClientPublicKey = publicKey;
+            ClientIV = iv;
+
             Console.WriteLine("[ CLIENT CONNECTED ]\n");
             var sessionId = OperationContext.Current.SessionId;
             Console.WriteLine(sessionId);
             // Check if user has 'ExchangeSessionKey' role
             // TODO: Return value must be BOOL
-            // Exchange Session Keys ???
+            // Exchange Session Keys ??
+
+            return diffieHellman.PublicKey;
         }
 
-        public void RunService(string ip, string port, string protocol)
+        public void RunService(byte[] ip, byte[] port, byte[] protocol)
         {
-            if(protocol.ToLower().Equals("tcp"))
+            string decryptedIp = diffieHellman.Decrypt(ClientPublicKey, ip, ClientIV);
+            string decryptedPort = diffieHellman.Decrypt(ClientPublicKey, port, ClientIV);
+            string decryptedProtocol = diffieHellman.Decrypt(ClientPublicKey, protocol, ClientIV);
+
+            if(decryptedProtocol.ToLower().Equals("tcp"))
             {
-                protocol = "net.tcp";
+                decryptedProtocol = "net.tcp";
             }
             else
             {
@@ -36,7 +49,7 @@ namespace Service
             // TODO: Return value must be BOOL
 
             NetTcpBinding binding = new NetTcpBinding();
-            string address = $"{protocol}://{ip}:{port}/TestService";
+            string address = $"{decryptedProtocol}://{decryptedIp}:{decryptedPort}/TestService";
 
             binding.Security.Mode = SecurityMode.Transport;
             binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
@@ -48,7 +61,7 @@ namespace Service
 
             host.Open();
 
-            Console.WriteLine("GG Pokrenuo port xDDD ");
+            Console.WriteLine("Service run on port " + decryptedPort);
         }
     }
 }
