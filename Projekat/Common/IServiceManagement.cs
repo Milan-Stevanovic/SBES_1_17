@@ -10,10 +10,10 @@ namespace Common
     public interface IServiceManagement
     {
         [OperationContract]
-        void Connect();
+        byte[] Connect(byte[] publicKey, byte[] iv);
 
 
         [OperationContract]
-        void RunService(string ip, string port, string protocol);
+        void RunService(byte[] ip, byte[] port, byte[] protocol);
     }
 }

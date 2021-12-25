@@ -25,17 +25,20 @@ namespace Client
 
             using (ClientProxy proxy = new ClientProxy(binding, endpointAddress))
             {
-                proxy.Connect();
+                DiffieHellman clientDiffieHellman = new DiffieHellman();
+                byte[] serverPublicKey = proxy.Connect(clientDiffieHellman.PublicKey, clientDiffieHellman.IV);
 
                 // TODO: put login in inf. while loop
                 Console.Write("Enter IP      : ");
-                string ip = Console.ReadLine();
+                string ip = Console.ReadLine().Trim();
                 Console.Write("Enter PORT    : ");
-                string port = Console.ReadLine();
+                string port = Console.ReadLine().Trim();
                 Console.Write("Enter PROTOCOL: ");
-                string protocol = Console.ReadLine();
+                string protocol = Console.ReadLine().Trim();
 
-                proxy.RunService(ip.Trim(), port.Trim(), protocol.Trim());
+                proxy.RunService(clientDiffieHellman.Encrypt(serverPublicKey, ip),
+                                 clientDiffieHellman.Encrypt(serverPublicKey, port), 
+                                 clientDiffieHellman.Encrypt(serverPublicKey, protocol));
 
                 // TODO: Separate TestConnection to individual methon
                 // Test method from test service
