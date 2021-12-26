@@ -14,6 +14,12 @@ namespace Common
 
 
         [OperationContract]
-        void RunService(byte[] ip, byte[] port, byte[] protocol);
+        bool RunService(byte[] ip, byte[] port, byte[] protocol);
+
+        [OperationContract]
+        bool StopService(byte[] ip, byte[] port, byte[] protocol);
+
+        [OperationContract]
+        void AddItemToBlackList(string type, string value);
     }
 }

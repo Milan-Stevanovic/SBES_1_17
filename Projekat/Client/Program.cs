@@ -12,6 +12,7 @@ namespace Client
     {
         static void Main(string[] args)
         {
+            bool connected = false;
             NetTcpBinding binding = new NetTcpBinding();
             string address = "net.tcp://localhost:9999/ServiceManagement";
 
@@ -25,34 +26,134 @@ namespace Client
 
             using (ClientProxy proxy = new ClientProxy(binding, endpointAddress))
             {
+
                 DiffieHellman clientDiffieHellman = new DiffieHellman();
-                byte[] serverPublicKey = proxy.Connect(clientDiffieHellman.PublicKey, clientDiffieHellman.IV);
+                byte[] serverPublicKey = null;
+                while (true)
+                {
 
-                // TODO: put login in inf. while loop
-                Console.Write("Enter IP      : ");
-                string ip = Console.ReadLine().Trim();
-                Console.Write("Enter PORT    : ");
-                string port = Console.ReadLine().Trim();
-                Console.Write("Enter PROTOCOL: ");
-                string protocol = Console.ReadLine().Trim();
+                    switch (Menu())
+                    {
+                        case 1:
+                            serverPublicKey = proxy.Connect(clientDiffieHellman.PublicKey, clientDiffieHellman.IV);
+                            connected = true;
+                            break;
+                        case 2:
+                            if (!connected)
+                            {
+                                Console.WriteLine("Please connect first!");
+                                break;
+                            }
+                            Console.Write("Enter IP      : ");
+                            string ip = Console.ReadLine().Trim();
+                            Console.Write("Enter PORT    : ");
+                            string port = Console.ReadLine().Trim();
+                            Console.Write("Enter PROTOCOL: ");
+                            string protocol = Console.ReadLine().Trim();
 
-                proxy.RunService(clientDiffieHellman.Encrypt(serverPublicKey, ip),
-                                 clientDiffieHellman.Encrypt(serverPublicKey, port), 
-                                 clientDiffieHellman.Encrypt(serverPublicKey, protocol));
+                            bool validRun = proxy.RunService(clientDiffieHellman.Encrypt(serverPublicKey, ip),
+                                                clientDiffieHellman.Encrypt(serverPublicKey, port),
+                                                clientDiffieHellman.Encrypt(serverPublicKey, protocol));
+                            if (validRun)
+                            {
+                                string testAddress = $"net.tcp://{ip}:{port}/TestService";
+                                EndpointAddress testEndpointAddress = new EndpointAddress(new Uri(testAddress), EndpointIdentity.CreateUpnIdentity("wcfTestService"));
+                                ChannelFactory<ITest> testFactory = new ChannelFactory<ITest>(binding);
+                                ITest testProxy = testFactory.CreateChannel(testEndpointAddress);
 
-                // TODO: Separate TestConnection to individual methon
-                // Test method from test service
-                string testAddress = $"net.tcp://{ip}:{port}/TestService";
-                EndpointAddress testEndpointAddress = new EndpointAddress(new Uri(testAddress), EndpointIdentity.CreateUpnIdentity("wcfTestService"));
-                ChannelFactory<ITest> testFactory = new ChannelFactory<ITest>(binding);
-                ITest testProxy = testFactory.CreateChannel(testEndpointAddress);
+                                testProxy.TestConnection();
 
-                testProxy.TestConnection();
+                                Console.WriteLine("[ CLIENT ] Service run successfully!\n");
+                            }
+                            else
+                            {
+                                Console.WriteLine("[ CLIENT ] Service falied to run!\n");
+                            }
+                            break;
+                        case 3:
+                            if (!connected)
+                            {
+                                Console.WriteLine("Please connect first!");
+                                break;
+                            }
+                            Console.Write("Enter IP      : ");
+                            string stopIp = Console.ReadLine().Trim();
+                            Console.Write("Enter PORT    : ");
+                            string stopPort = Console.ReadLine().Trim();
+                            Console.Write("Enter PROTOCOL: ");
+                            string stopProtocol = Console.ReadLine().Trim();
 
-                Console.WriteLine("[ CLIENT ] Service run successfully!\n");
+                            bool validStop = proxy.StopService(clientDiffieHellman.Encrypt(serverPublicKey, stopIp),
+                                             clientDiffieHellman.Encrypt(serverPublicKey, stopPort),
+                                             clientDiffieHellman.Encrypt(serverPublicKey, stopProtocol));
+                            if (validStop)
+                            {
+                                Console.WriteLine("[ CLIENT ] Service stopped successfully!\n");
+                            }
+                            else
+                            {
+                                Console.WriteLine("[ CLIENT ] Service falied to stop!\n");
+                            }
+                            break;
+                        case 4:
+                            if (!connected)
+                            {
+                                Console.WriteLine("Please connect first!");
+                                break;
+                            }
+                            Console.Write("Ip to ban:");
+                            string ipBan = Console.ReadLine().Trim();
+                            proxy.AddItemToBlackList("ip", ipBan);
+                            break;
+                        case 5:
+                            if (!connected)
+                            {
+                                Console.WriteLine("Please connect first!");
+                                break;
+                            }
+                            Console.Write("Port to ban:");
+                            string portBan = Console.ReadLine().Trim();
+                            proxy.AddItemToBlackList("port", portBan);
+                            break;
+                        case 6:
+                            if (!connected)
+                            {
+                                Console.WriteLine("Please connect first!");
+                                break;
+                            }
+                            Console.Write("Protocol to ban:");
+                            string protocolBan = Console.ReadLine().Trim();
+                            proxy.AddItemToBlackList("protocol", protocolBan);
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
+        }
 
-            Console.ReadLine();
+        public static int Menu()
+        {
+            int option = -1;
+            do
+            {
+                Console.WriteLine("============ MENU ============");
+                Console.WriteLine("[ 1 ] Connect");
+                Console.WriteLine("[ 2 ] Run service");
+                Console.WriteLine("[ 3 ] Stop service");
+                Console.WriteLine("[ 4 ] Add ip to blacklist");
+                Console.WriteLine("[ 5 ] Add port to blacklist");
+                Console.WriteLine("[ 6 ] Add protocol to blacklist");
+                Console.WriteLine("==============================");
+
+                Console.Write("Choose option: ");
+                option = Int32.Parse(Console.ReadLine());
+
+            } while (option < 1 || option > 6);
+
+
+
+            return option;
         }
     }
 }
