@@ -16,6 +16,18 @@ namespace Client
             factory = this.CreateChannel();
         }
 
+        public void AddItemToBlackList(string type, string value)
+        {
+            try
+            {
+                factory.AddItemToBlackList(type, value);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error: {0}", e.Message);
+            }
+        }
+
         public byte[] Connect(byte[] publicKey, byte[] iv)
         {
             byte[] serverPublicKey = null;
@@ -32,15 +44,29 @@ namespace Client
             return serverPublicKey;
         }
 
-        public void RunService(byte[] ip, byte[] port, byte[] protocol)
+        public bool RunService(byte[] ip, byte[] port, byte[] protocol)
         {
             try
             {
-                factory.RunService(ip, port, protocol);
+                return factory.RunService(ip, port, protocol);
             }
             catch (Exception e)
             {
                 Console.WriteLine("Error: {0}", e.Message);
+                return false;
+            }
+        }
+
+        public bool StopService(byte[] ip, byte[] port, byte[] protocol)
+        {
+            try
+            {
+                return factory.StopService(ip, port, protocol);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error: {0}", e.Message);
+                return false;
             }
         }
     }
