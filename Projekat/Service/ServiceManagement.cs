@@ -11,9 +11,6 @@ namespace Service
 {
     public class ServiceManagement : IServiceManagement
     {
-        List<string> blackListIp = new List<string>();
-        List<string> blackListPort = new List<string>();
-        List<string> blacListProtocol = new List<string>();
         public byte[] ClientPublicKey { get; set; }
         public byte[] ClientIV { get; set; }
         public DiffieHellman diffieHellman = new DiffieHellman();
@@ -29,13 +26,11 @@ namespace Service
             Console.WriteLine("[ CLIENT CONNECTED ]\n");
             var sessionId = OperationContext.Current.SessionId;
             Console.WriteLine(sessionId);
-            // Check if user has 'ExchangeSessionKey' role
-            // TODO: Return value must be BOOL
-            // Exchange Session Keys ??
 
             return diffieHellman.PublicKey;
         }
 
+        [PrincipalPermission(SecurityAction.Demand, Role = "RunService")]
         public bool RunService(byte[] ip, byte[] port, byte[] protocol)
         {
             string decryptedIp = diffieHellman.Decrypt(ClientPublicKey, ip, ClientIV);
@@ -48,7 +43,7 @@ namespace Service
             }
             else
             {
-                return false;
+                Program.blackListProtocol.Add(decryptedProtocol);
             }
 
             if (decryptedIp.ToLower().Equals("localhost"))
@@ -56,8 +51,9 @@ namespace Service
                 decryptedIp = "127.0.0.1";
             }
 
-            // TODO: Check BLACKLIST Configuration
-            // TODO: Return value must be BOOL
+
+            if (Blacklisted(decryptedIp, decryptedPort, decryptedProtocol)) 
+                return false;
 
             NetTcpBinding binding = new NetTcpBinding();
             string address = $"{decryptedProtocol}://{decryptedIp}:{decryptedPort}/TestService";
@@ -85,6 +81,7 @@ namespace Service
             return true;
         }
 
+        [PrincipalPermission(SecurityAction.Demand, Role = "Admin")]
         public bool StopService(byte[] ip, byte[] port, byte[] protocol)
         {
             string decryptedIp = diffieHellman.Decrypt(ClientPublicKey, ip, ClientIV);
@@ -119,27 +116,59 @@ namespace Service
             return false;
         }
 
-
+        [PrincipalPermission(SecurityAction.Demand, Role = "Admin")]
         public void AddItemToBlackList(string type, string value)
         {
-            using (StreamWriter sw = new StreamWriter("blacklist.txt", true))
+            switch (type)
             {
-                switch (type)
-                {
-                    case "ip":
-                        blackListIp.Add(value);
-                        sw.WriteLine("ip=" + value.ToString());
-                        break;
-                    case "protocol":
-                        blacListProtocol.Add(value);
-                        sw.WriteLine("protocol=" + value.ToString());
-                        break;
-                    case "port":
-                        blackListPort.Add(value);
-                        sw.WriteLine("port=" + value.ToString());
-                        break;
-                }
+                case "ip":
+                    Program.blackListIp.Add(value);
+                    ValidInput("ip=" + value.ToString());
+                    break;
+                case "protocol":
+                    Program.blackListProtocol.Add(value);
+                    ValidInput("protocol=" + value.ToString());
+                    break;
+                case "port":
+                    Program.blackListPort.Add(value);
+                    ValidInput("port=" + value.ToString());
+                    break;
             }
+        }
+
+        public bool Blacklisted(string ip, string port, string protocol)
+        {
+            if (Program.blackListIp.Contains(ip) || Program.blackListPort.Contains(port) || Program.blackListProtocol.Contains(protocol))
+                return true;
+
+            return false;
+        }
+
+        public void ValidInput(string input)
+        {
+            byte[] inputBytes =  Encoding.ASCII.GetBytes(input);
+            lock (Program.fileChecksum)
+            {
+                byte[] help = Program.Checksum();
+                bool write = true;
+                for (int i = 0; i < Program.fileChecksum.Length; i++)
+                {
+                    if (Program.fileChecksum[i] != help[i])
+                    {
+                        write = false;
+                    }
+                }
+
+                if (write)
+                {
+                    using (StreamWriter sw = new StreamWriter("blacklist.txt", true))
+                    {
+                        sw.WriteLine(input);
+                    }
+
+                    Program.fileChecksum = Program.Checksum();
+                }
+            }  
         }
     }
 }
