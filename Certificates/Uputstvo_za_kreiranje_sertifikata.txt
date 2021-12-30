@@ -1,0 +1,25 @@
+> makecert -n "CN=AuditCA" -r -sv AuditCA.pvk AuditCA.cer
+  password         = '1234'  
+  confirm password = '1234' 
+  password         = '1234'
+
+========== za service usera ==========
+
+> makecert -sv WCFService.pvk -iv AuditCA.pvk -n "CN=wcfservice" -pe -ic AuditCA.cer WCFService.cer -sr localmachine -ss My -sky exchange
+  password         = '1234'  
+  confirm password = '1234' 
+  password         = '1234'
+  issuer password  = '1234'
+  
+> pvk2pfx.exe /pvk WCFService.pvk /pi 1234 /spc WCFService.cer /pfx WCFService.pfx
+
+
+========== za audit usera ==========
+
+> makecert -sv WCFAudit.pvk -iv AuditCA.pvk -n "CN=wcfaudit" -pe -ic AuditCA.cer WCFAudit.cer -sr localmachine -ss My -sky exchange
+  password         = '1234'  
+  confirm password = '1234' 
+  password         = '1234'
+  issuer password  = '1234'
+  
+> pvk2pfx.exe /pvk WCFAudit.pvk /pi 1234 /spc WCFAudit.cer /pfx WCFAudit.pfx

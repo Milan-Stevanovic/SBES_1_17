@@ -101,21 +101,11 @@ namespace Client
                                 Console.WriteLine("Please connect first!");
                                 break;
                             }
-                            Console.Write("Ip to ban:");
-                            string ipBan = Console.ReadLine().Trim();
-                            proxy.AddItemToBlackList("ip", ipBan);
-                            break;
-                        case 5:
-                            if (!connected)
-                            {
-                                Console.WriteLine("Please connect first!");
-                                break;
-                            }
                             Console.Write("Port to ban:");
                             string portBan = Console.ReadLine().Trim();
                             proxy.AddItemToBlackList("port", portBan);
                             break;
-                        case 6:
+                        case 5:
                             if (!connected)
                             {
                                 Console.WriteLine("Please connect first!");
@@ -141,15 +131,14 @@ namespace Client
                 Console.WriteLine("[ 1 ] Connect");
                 Console.WriteLine("[ 2 ] Run service");
                 Console.WriteLine("[ 3 ] Stop service");
-                Console.WriteLine("[ 4 ] Add ip to blacklist");
-                Console.WriteLine("[ 5 ] Add port to blacklist");
-                Console.WriteLine("[ 6 ] Add protocol to blacklist");
+                Console.WriteLine("[ 4 ] Add port to blacklist");
+                Console.WriteLine("[ 5 ] Add protocol to blacklist");
                 Console.WriteLine("==============================");
 
                 Console.Write("Choose option: ");
                 option = Int32.Parse(Console.ReadLine());
 
-            } while (option < 1 || option > 6);
+            } while (option < 1 || option > 5);
 
 
 

@@ -43,7 +43,8 @@ namespace Service
             }
             else
             {
-                Program.blackListProtocol.Add(decryptedProtocol);
+                Data.blackListProtocol.Add(decryptedProtocol);
+                ValidInput("protocol=" + decryptedProtocol);
             }
 
             if (decryptedIp.ToLower().Equals("localhost"))
@@ -52,7 +53,7 @@ namespace Service
             }
 
 
-            if (Blacklisted(decryptedIp, decryptedPort, decryptedProtocol)) 
+            if (Blacklisted(decryptedPort, decryptedProtocol)) 
                 return false;
 
             NetTcpBinding binding = new NetTcpBinding();
@@ -121,24 +122,20 @@ namespace Service
         {
             switch (type)
             {
-                case "ip":
-                    Program.blackListIp.Add(value);
-                    ValidInput("ip=" + value.ToString());
-                    break;
                 case "protocol":
-                    Program.blackListProtocol.Add(value);
+                    Data.blackListProtocol.Add(value);
                     ValidInput("protocol=" + value.ToString());
                     break;
                 case "port":
-                    Program.blackListPort.Add(value);
+                    Data.blackListPort.Add(value);
                     ValidInput("port=" + value.ToString());
                     break;
             }
         }
 
-        public bool Blacklisted(string ip, string port, string protocol)
+        public bool Blacklisted(string port, string protocol)
         {
-            if (Program.blackListIp.Contains(ip) || Program.blackListPort.Contains(port) || Program.blackListProtocol.Contains(protocol))
+            if (Data.blackListPort.Contains(port) || Data.blackListProtocol.Contains(protocol))
                 return true;
 
             return false;
@@ -146,14 +143,13 @@ namespace Service
 
         public void ValidInput(string input)
         {
-            byte[] inputBytes =  Encoding.ASCII.GetBytes(input);
-            lock (Program.fileChecksum)
+            lock (Data.fileChecksum)
             {
-                byte[] help = Program.Checksum();
+                byte[] tempHash = Data.Checksum();
                 bool write = true;
-                for (int i = 0; i < Program.fileChecksum.Length; i++)
+                for (int i = 0; i < Data.fileChecksum.Length; i++)
                 {
-                    if (Program.fileChecksum[i] != help[i])
+                    if (Data.fileChecksum[i] != tempHash[i])
                     {
                         write = false;
                     }
@@ -166,7 +162,7 @@ namespace Service
                         sw.WriteLine(input);
                     }
 
-                    Program.fileChecksum = Program.Checksum();
+                    Data.fileChecksum = Data.Checksum();
                 }
             }  
         }
