@@ -1,9 +1,0 @@
-D:\FAX\4 Godina\7. SEMESTAR\(SBES) Sigurnost i bezbednost elektroenergetskog softvera\SBES_1_17\Projekat\Service\bin\Debug\Service.exe
-D:\FAX\4 Godina\7. SEMESTAR\(SBES) Sigurnost i bezbednost elektroenergetskog softvera\SBES_1_17\Projekat\Service\bin\Debug\Service.pdb
-D:\FAX\4 Godina\7. SEMESTAR\(SBES) Sigurnost i bezbednost elektroenergetskog softvera\SBES_1_17\Projekat\Service\bin\Debug\Common.dll
-D:\FAX\4 Godina\7. SEMESTAR\(SBES) Sigurnost i bezbednost elektroenergetskog softvera\SBES_1_17\Projekat\Service\bin\Debug\Common.pdb
-D:\FAX\4 Godina\7. SEMESTAR\(SBES) Sigurnost i bezbednost elektroenergetskog softvera\SBES_1_17\Projekat\Service\obj\Debug\Service.csprojAssemblyReference.cache
-D:\FAX\4 Godina\7. SEMESTAR\(SBES) Sigurnost i bezbednost elektroenergetskog softvera\SBES_1_17\Projekat\Service\obj\Debug\Service.csproj.CoreCompileInputs.cache
-D:\FAX\4 Godina\7. SEMESTAR\(SBES) Sigurnost i bezbednost elektroenergetskog softvera\SBES_1_17\Projekat\Service\obj\Debug\Service.csproj.CopyComplete
-D:\FAX\4 Godina\7. SEMESTAR\(SBES) Sigurnost i bezbednost elektroenergetskog softvera\SBES_1_17\Projekat\Service\obj\Debug\Service.exe
-D:\FAX\4 Godina\7. SEMESTAR\(SBES) Sigurnost i bezbednost elektroenergetskog softvera\SBES_1_17\Projekat\Service\obj\Debug\Service.pdb

@@ -1,2 +1,3 @@
 port=6006
 protocol=udp
+protocol=http

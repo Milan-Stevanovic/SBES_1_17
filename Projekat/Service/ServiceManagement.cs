@@ -1,11 +1,14 @@
 ﻿using Common;
+using Manager;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Permissions;
+using System.Security.Principal;
 using System.ServiceModel;
 using System.Text;
+using System.Threading;
 
 namespace Service
 {
@@ -24,8 +27,9 @@ namespace Service
             ClientIV = iv;
 
             Console.WriteLine("[ CLIENT CONNECTED ]\n");
-            var sessionId = OperationContext.Current.SessionId;
-            Console.WriteLine(sessionId);
+            WindowsIdentity windowsIdentity = Thread.CurrentPrincipal.Identity as WindowsIdentity;
+            string username = Formatter.ParseName(windowsIdentity.Name);
+            Program.auditProxy.LogEvent((int)AuditEventTypes.ConnectSuccess, username);
 
             return diffieHellman.PublicKey;
         }
@@ -33,6 +37,9 @@ namespace Service
         [PrincipalPermission(SecurityAction.Demand, Role = "RunService")]
         public bool RunService(byte[] ip, byte[] port, byte[] protocol)
         {
+            WindowsIdentity windowsIdentity = Thread.CurrentPrincipal.Identity as WindowsIdentity;
+            string username = Formatter.ParseName(windowsIdentity.Name);
+
             string decryptedIp = diffieHellman.Decrypt(ClientPublicKey, ip, ClientIV);
             string decryptedPort = diffieHellman.Decrypt(ClientPublicKey, port, ClientIV);
             string decryptedProtocol = diffieHellman.Decrypt(ClientPublicKey, protocol, ClientIV);
@@ -43,8 +50,11 @@ namespace Service
             }
             else
             {
+                Program.auditProxy.LogEvent((int)AuditEventTypes.RunServiceFailure, username);
+
                 Data.blackListProtocol.Add(decryptedProtocol);
                 ValidInput("protocol=" + decryptedProtocol);
+                return false;
             }
 
             if (decryptedIp.ToLower().Equals("localhost"))
@@ -53,14 +63,18 @@ namespace Service
             }
 
 
-            if (Blacklisted(decryptedPort, decryptedProtocol)) 
+            if (Blacklisted(decryptedPort, decryptedProtocol))
+            {
+                Program.auditProxy.LogEvent((int)AuditEventTypes.RunServiceFailure, username);
                 return false;
+            }
 
             NetTcpBinding binding = new NetTcpBinding();
             string address = $"{decryptedProtocol}://{decryptedIp}:{decryptedPort}/TestService";
 
             if (hosts.ContainsKey(address))
             {
+                Program.auditProxy.LogEvent((int)AuditEventTypes.RunServiceFailure, username);
                 Console.WriteLine($"Service already runs on address [{address}]");
                 return false;
             }
@@ -74,7 +88,7 @@ namespace Service
             host.AddServiceEndpoint(typeof(ITest), binding, address);
 
             host.Open();
-
+            Program.auditProxy.LogEvent((int)AuditEventTypes.RunServiceSuccess, username);
             hosts.Add(address, host);
 
             Console.WriteLine("Service run on port " + decryptedPort);
@@ -123,16 +137,25 @@ namespace Service
             switch (type)
             {
                 case "protocol":
-                    Data.blackListProtocol.Add(value);
-                    ValidInput("protocol=" + value.ToString());
+                    // do not write if blacklisted item is already in list
+                    if(!Data.blackListProtocol.Contains(value))
+                    {
+                        Data.blackListProtocol.Add(value);
+                        ValidInput("protocol=" + value.ToString());
+                    }
                     break;
                 case "port":
-                    Data.blackListPort.Add(value);
-                    ValidInput("port=" + value.ToString());
+                    if(!Data.blackListPort.Contains(value))
+                    {
+                        Data.blackListPort.Add(value);
+                        ValidInput("port=" + value.ToString());
+                    }
                     break;
             }
         }
 
+
+        
         public bool Blacklisted(string port, string protocol)
         {
             if (Data.blackListPort.Contains(port) || Data.blackListProtocol.Contains(protocol))
