@@ -10,7 +10,7 @@ namespace Service
     {
         public void TestConnection()
         {
-            Console.WriteLine("[ CONNECTION WORKING ]\n");
+            Console.WriteLine("[ CONNECTION WORKING ] This is a test message.\n");
         }
     }
 }

@@ -1,9 +1,12 @@
 ﻿using Common;
+using Manager;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.ServiceModel;
+using System.ServiceModel.Description;
 using System.Text;
 using System.Threading;
 
@@ -11,11 +14,13 @@ namespace Service
 {
     public class Program
     {
+        public static IAudit auditProxy = null;
         static void Main(string[] args)
         {
             Data data = new Data();
             data.ReadBlackListFile();
             data.CheckBlacklistTxt();
+            auditProxy = ConnectAudit();
 
             NetTcpBinding binding = new NetTcpBinding();
             string address = "net.tcp://localhost:9999/ServiceManagement";
@@ -26,6 +31,9 @@ namespace Service
 
             ServiceHost host = new ServiceHost(typeof(ServiceManagement));
 
+            host.Description.Behaviors.Remove(typeof(ServiceDebugBehavior));
+            host.Description.Behaviors.Add(new ServiceDebugBehavior() { IncludeExceptionDetailInFaults = true });
+
             host.AddServiceEndpoint(typeof(IServiceManagement), binding, address);
 
             host.Open();
@@ -34,6 +42,22 @@ namespace Service
             Console.WriteLine("Service up and running...");
 
             Console.ReadLine();
+        }
+
+        static WCFAuditClient ConnectAudit()
+        {
+            /// Define the expected service certificate. It is required to establish cmmunication using certificates.
+            string srvCertCN = "wcfaudit";
+
+            NetTcpBinding binding = new NetTcpBinding();
+            binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Certificate;
+
+            /// Use CertManager class to obtain the certificate based on the "srvCertCN" representing the expected service identity.
+            X509Certificate2 srvCert = CertManager.GetCertificateFromStorage(StoreName.TrustedPeople, StoreLocation.LocalMachine, srvCertCN);
+            EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:11000/Audit"),
+                                      new X509CertificateEndpointIdentity(srvCert));
+
+            return new WCFAuditClient(binding, address);
         }
     }
 }

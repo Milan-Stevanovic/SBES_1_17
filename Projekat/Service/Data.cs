@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Manager;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -85,6 +86,7 @@ namespace Service
                         {
                             if (fileChecksum[i] != help[i])
                             {
+                                Program.auditProxy.LogEvent((int)AuditEventTypes.BlacklistFileChanged, " ");
                                 Console.WriteLine("Unauthorised blacklist file corrupted, Admin reaction REQUIRED!!!");
                                 break;
                             }

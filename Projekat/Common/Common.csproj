@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DiffieHellman.cs" />
+    <Compile Include="IAudit.cs" />
     <Compile Include="IServiceManagement.cs" />
     <Compile Include="ITest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

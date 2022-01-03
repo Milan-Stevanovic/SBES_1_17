@@ -1,5 +1,7 @@
 # Projektni zadatak 17.
 
+## Specifikacije i pokretanje zadatka
+
 Da bi se projekat uspešno pokrenuo potrebno je dodati sledeće korisnike i ubaciti ih u određene grupe:
 
 Grupe koje je potrebno dodati: ExchangeSessionKey, RunService, Admin
@@ -11,7 +13,15 @@ Grupe koje je potrebno dodati: ExchangeSessionKey, RunService, Admin
 | wcfadmin    | 1234        | ExchangeSessionKey, RunService, Admin |
 | wcfaudit    | 1234        | -                                     |
 
-## Zadatak
+### Projekte je potrebno pokretati sledećim redosledom sa određenim korisnicima:
+
+| No. | Project     | User                 | Password  |
+| --- | ----------- | -------------------- | --------- |
+| 1.  | Audit.exe   | wcfaudit             | 1234      |
+| 2.  | Service.exe | wcfservice           | 1234      |
+| 3.  | Client.exe  | wcfclient \ wcfadmin | 1234      |
+
+# Zadatak
 
 Implementirati komponentu za upravljanje servisima (Service Management - SM) u okviru koje je moguće pokretati i zaustavljati servise. Sastavni deo SM komponente je blacklist konfiguracija koja definiše spisak zabranjenih portova i/ili protokola koji smeju da budu aktivni za određene grupe korisnika. Sve nedozvoljene pokušaje startovanja servisa SM loguje u okviru posebne Audit komponente sa kojom uspostavlja komunikaciju preko sertifikata.
 

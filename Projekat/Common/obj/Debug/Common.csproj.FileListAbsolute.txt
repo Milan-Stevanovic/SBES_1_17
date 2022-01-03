@@ -1,5 +1,0 @@
-D:\FAX\4 Godina\7. SEMESTAR\(SBES) Sigurnost i bezbednost elektroenergetskog softvera\SBES_1_17\Projekat\Common\bin\Debug\Common.dll
-D:\FAX\4 Godina\7. SEMESTAR\(SBES) Sigurnost i bezbednost elektroenergetskog softvera\SBES_1_17\Projekat\Common\bin\Debug\Common.pdb
-D:\FAX\4 Godina\7. SEMESTAR\(SBES) Sigurnost i bezbednost elektroenergetskog softvera\SBES_1_17\Projekat\Common\obj\Debug\Common.csproj.CoreCompileInputs.cache
-D:\FAX\4 Godina\7. SEMESTAR\(SBES) Sigurnost i bezbednost elektroenergetskog softvera\SBES_1_17\Projekat\Common\obj\Debug\Common.dll
-D:\FAX\4 Godina\7. SEMESTAR\(SBES) Sigurnost i bezbednost elektroenergetskog softvera\SBES_1_17\Projekat\Common\obj\Debug\Common.pdb
