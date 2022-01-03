@@ -19,7 +19,6 @@ namespace Service
         public DiffieHellman diffieHellman = new DiffieHellman();
         public Dictionary<string, ServiceHost> hosts = new Dictionary<string, ServiceHost>();
 
-
         [PrincipalPermission(SecurityAction.Demand, Role = "ExchangeSessionKey")]
         public byte[] Connect(byte[] publicKey, byte[] iv)
         {
@@ -31,6 +30,12 @@ namespace Service
             string username = Formatter.ParseName(windowsIdentity.Name);
             Program.auditProxy.LogEvent((int)AuditEventTypes.ConnectSuccess, username);
 
+            // added user in dictionary to track dos attacks
+            lock (DoSAttackDetector.dosTracker)
+            { 
+                DoSAttackDetector.dosTracker.Add(username, 0);
+            }
+            
             return diffieHellman.PublicKey;
         }
 
@@ -45,37 +50,24 @@ namespace Service
             string decryptedProtocol = diffieHellman.Decrypt(ClientPublicKey, protocol, ClientIV);
 
             if (decryptedProtocol.ToLower().Equals("tcp"))
-            {
                 decryptedProtocol = "net.tcp";
-            }
             else
-            {
-                Program.auditProxy.LogEvent((int)AuditEventTypes.RunServiceFailure, username);
-
-                Data.blackListProtocol.Add(decryptedProtocol);
-                ValidInput("protocol=" + decryptedProtocol);
                 return false;
-            }
 
             if (decryptedIp.ToLower().Equals("localhost"))
-            {
                 decryptedIp = "127.0.0.1";
-            }
-
-
-            if (Blacklisted(decryptedPort, decryptedProtocol))
-            {
-                Program.auditProxy.LogEvent((int)AuditEventTypes.RunServiceFailure, username);
-                return false;
-            }
 
             NetTcpBinding binding = new NetTcpBinding();
             string address = $"{decryptedProtocol}://{decryptedIp}:{decryptedPort}/TestService";
 
-            if (hosts.ContainsKey(address))
+            if (hosts.ContainsKey(address) || Blacklisted(decryptedPort, decryptedProtocol))
             {
+                lock (DoSAttackDetector.dosTracker)
+                {
+                    DoSAttackDetector.dosTracker[username]++;
+                }
                 Program.auditProxy.LogEvent((int)AuditEventTypes.RunServiceFailure, username);
-                Console.WriteLine($"Service already runs on address [{address}]");
+                Console.WriteLine("Service faild to run ...");
                 return false;
             }
 
@@ -96,7 +88,7 @@ namespace Service
             return true;
         }
 
-        [PrincipalPermission(SecurityAction.Demand, Role = "Admin")]
+        [PrincipalPermission(SecurityAction.Demand, Role = "RunService")]
         public bool StopService(byte[] ip, byte[] port, byte[] protocol)
         {
             string decryptedIp = diffieHellman.Decrypt(ClientPublicKey, ip, ClientIV);
@@ -104,18 +96,12 @@ namespace Service
             string decryptedProtocol = diffieHellman.Decrypt(ClientPublicKey, protocol, ClientIV);
 
             if (decryptedProtocol.ToLower().Equals("tcp"))
-            {
                 decryptedProtocol = "net.tcp";
-            }
             else
-            {
                 return false;
-            }
 
             if (decryptedIp.ToLower().Equals("localhost"))
-            {
                 decryptedIp = "127.0.0.1";
-            }
 
             string address = $"{decryptedProtocol}://{decryptedIp}:{decryptedPort}/TestService";
 
@@ -153,8 +139,6 @@ namespace Service
                     break;
             }
         }
-
-
         
         public bool Blacklisted(string port, string protocol)
         {
@@ -166,10 +150,10 @@ namespace Service
 
         public void ValidInput(string input)
         {
-            lock (Data.fileChecksum)
+            lock (Data.fileChecksum)                    // get hash stored in Data class, last valid hash
             {
-                byte[] tempHash = Data.Checksum();
-                bool write = true;
+                byte[] tempHash = Data.Checksum();      // get hash of current state of .txt file
+                bool write = true;                      // flag for validity of .txt
                 for (int i = 0; i < Data.fileChecksum.Length; i++)
                 {
                     if (Data.fileChecksum[i] != tempHash[i])
@@ -185,7 +169,7 @@ namespace Service
                         sw.WriteLine(input);
                     }
 
-                    Data.fileChecksum = Data.Checksum();
+                    Data.fileChecksum = Data.Checksum();        // set hash to new value
                 }
             }  
         }

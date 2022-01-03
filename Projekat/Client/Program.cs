@@ -115,6 +115,35 @@ namespace Client
                             string protocolBan = Console.ReadLine().Trim();
                             proxy.AddItemToBlackList("protocol", protocolBan);
                             break;
+                        case 6:
+                            if (!connected)
+                            {
+                                Console.WriteLine("Please connect first!");
+                                break;
+                            }
+
+                            for (int i = 0; i < 8; i++)
+                            { 
+                                bool dosValidRun = proxy.RunService(clientDiffieHellman.Encrypt(serverPublicKey, "localhost"),
+                                                   clientDiffieHellman.Encrypt(serverPublicKey, "6006"),
+                                                   clientDiffieHellman.Encrypt(serverPublicKey, "tcp"));
+                                if (dosValidRun)
+                                {
+                                    string testAddress = $"net.tcp://localhost:6006/TestService";
+                                    EndpointAddress testEndpointAddress = new EndpointAddress(new Uri(testAddress), EndpointIdentity.CreateUpnIdentity("wcfTestService"));
+                                    ChannelFactory<ITest> testFactory = new ChannelFactory<ITest>(binding);
+                                    ITest testProxy = testFactory.CreateChannel(testEndpointAddress);
+
+                                    testProxy.TestConnection();
+
+                                    Console.WriteLine("[ CLIENT ] Service run successfully!\n");
+                                }
+                                else
+                                {
+                                    Console.WriteLine("[ CLIENT ] Service falied to run!\n");
+                                }
+                            }
+                            break;
                         default:
                             break;
                     }
@@ -133,12 +162,13 @@ namespace Client
                 Console.WriteLine("[ 3 ] Stop service");
                 Console.WriteLine("[ 4 ] Add port to blacklist");
                 Console.WriteLine("[ 5 ] Add protocol to blacklist");
+                Console.WriteLine("[ 6 ] DoS Attack - Test");
                 Console.WriteLine("==============================");
 
                 Console.Write("Choose option: ");
                 option = Int32.Parse(Console.ReadLine());
 
-            } while (option < 1 || option > 5);
+            } while (option < 1 || option > 6);
 
 
 

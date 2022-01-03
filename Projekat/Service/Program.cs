@@ -15,11 +15,14 @@ namespace Service
     public class Program
     {
         public static IAudit auditProxy = null;
+        public static bool flagShutdown = false;
         static void Main(string[] args)
         {
             Data data = new Data();
             data.ReadBlackListFile();
             data.CheckBlacklistTxt();
+            DoSAttackDetector detector = new DoSAttackDetector();
+            detector.DoSTrackerDetection();
             auditProxy = ConnectAudit();
 
             NetTcpBinding binding = new NetTcpBinding();
@@ -38,9 +41,22 @@ namespace Service
 
             host.Open();
 
+
             Console.WriteLine("Service process run by user: " + WindowsIdentity.GetCurrent().Name);
             Console.WriteLine("Service up and running...");
 
+            while (true)
+            {
+                // if file corrupted, shutdown server
+                if (flagShutdown)
+                { 
+                    host.Close();
+                    Console.WriteLine("Service shutdown...");
+                    break;
+                }
+
+                Thread.Sleep(1000);
+            }
             Console.ReadLine();
         }
 
