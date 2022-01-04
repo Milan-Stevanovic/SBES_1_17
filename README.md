@@ -21,6 +21,12 @@ Grupe koje je potrebno dodati: ExchangeSessionKey, RunService, Admin
 | 2.  | Service.exe | wcfservice           | 1234      |
 | 3.  | Client.exe  | wcfclient \ wcfadmin | 1234      |
 
+### ❗❗❗ Da bi Audit.exe mogao uspešno da upisuje događaje u Event Viewer potrebno je uraditi sledeće: ❗❗❗
+1. U Registry Editory (regedit.msc) na putanju 'Computer\HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Application' dodati novi folder tj. Key i nazvati ga 'Audit' ( RMB->New->Key )
+2. Unutar njega, na putanju 'Computer\HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Application\Audit' kreirati novi String Value ( RMB->New->String Value )
+3. Value name: 'EventMessageFile' i Value data: 'C:\Windows\Microsoft.NET\Framework\v2.0.50727\EventLogMessages.dll'.
+Napomena: Verzija 'v2.0.50727' može da se razlikuje na drugim računarima, ukoliko je nema, koristiti najnoviju verziju.
+
 # Zadatak
 
 Implementirati komponentu za upravljanje servisima (Service Management - SM) u okviru koje je moguće pokretati i zaustavljati servise. Sastavni deo SM komponente je blacklist konfiguracija koja definiše spisak zabranjenih portova i/ili protokola koji smeju da budu aktivni za određene grupe korisnika. Sve nedozvoljene pokušaje startovanja servisa SM loguje u okviru posebne Audit komponente sa kojom uspostavlja komunikaciju preko sertifikata.
@@ -39,7 +45,7 @@ Dodatno, Audit komponenta treba da obezbedi detekciju Denial of Service (DoS) na
 
 Posebna grupa SM klijenata ima pravo da menja blacklist konfiguraciju, odnosno da periodično proverava da li je narušen integritet fajla gde se konfiguracija skladišti. Validna izmena konfiguracije je izmena napravljena posredstvom SM komponente koja računa checksum za dati fajl (te je svaka ručna izmena neovlašćena). U slučaju da je integritet narušen, SM prijavljuje događaj Audit komponenti i nakon toga se zaustavlja.
 
-Milan Stevanvović PR128-2018
+Milan Stevanović PR128-2018
 
 Nevena Panić PR43-2018
 
