@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Configuration;
+using System.Collections.Specialized;
 
 namespace Service
 {
@@ -11,8 +13,9 @@ namespace Service
     {
         // Dos Attack
         // time interval and number of faild requests allowed
-        public int allowedNumberOfDosAttacks = 5;
-        public int dosInterval = 10;
+        public int allowedNumberOfDosAttacks = Int32.Parse(ConfigurationManager.AppSettings.Get("allowedNumberOfDosAttacks"));
+        public int dosInterval = Int32.Parse(ConfigurationManager.AppSettings.Get("dosInterval"));
+
         public static Dictionary<string, int> dosTracker;
 
         public DoSAttackDetector() 
@@ -40,7 +43,7 @@ namespace Service
                                 {
                                     Program.auditProxy.LogEvent((int)AuditEventTypes.DoSAttackDetected, user);
                                     dosTracker[user] = 0;
-                                    Console.WriteLine($" [DoS Attack Detected] by user: '{0}'", user);
+                                    Console.WriteLine(" [DoS Attack Detected] by user: " + user);
                                 }
 
                                 // only on last piace of interval reset value to zero
