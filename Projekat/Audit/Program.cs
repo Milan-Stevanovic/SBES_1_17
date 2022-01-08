@@ -17,6 +17,10 @@ namespace Audit
     {
         static void Main(string[] args)
         {
+			// DoS Attack detector for audit component
+			DoSAttackDetector detector = new DoSAttackDetector();
+			detector.DoSTrackerDetection();
+
 			/// srvCertCN.SubjectName should be set to the service's username. .NET WindowsIdentity class provides information about Windows user running the given process
 			string srvCertCN = Formatter.ParseName(WindowsIdentity.GetCurrent().Name);
 
@@ -39,9 +43,6 @@ namespace Audit
 
 			///Set appropriate service's certificate on the host. Use CertManager class to obtain the certificate based on the "srvCertCN"
 			host.Credentials.ServiceCertificate.Certificate = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvCertCN);
-
-
-
 
 			ServiceSecurityAuditBehavior newAudit = new ServiceSecurityAuditBehavior();
 			newAudit.AuditLogLocation = AuditLogLocation.Application;

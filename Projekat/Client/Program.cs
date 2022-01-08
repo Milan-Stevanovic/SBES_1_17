@@ -154,6 +154,7 @@ namespace Client
         public static int Menu()
         {
             int option = -1;
+            bool valid = false;
             do
             {
                 Console.WriteLine("============ MENU ============");
@@ -166,11 +167,9 @@ namespace Client
                 Console.WriteLine("==============================");
 
                 Console.Write("Choose option: ");
-                option = Int32.Parse(Console.ReadLine());
+                valid = Int32.TryParse(Console.ReadLine(), out option);
 
-            } while (option < 1 || option > 6);
-
-
+            } while (option < 1 || option > 6 && !valid);
 
             return option;
         }

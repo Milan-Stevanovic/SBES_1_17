@@ -30,12 +30,6 @@ namespace Service
             string username = Formatter.ParseName(windowsIdentity.Name);
             Program.auditProxy.LogEvent((int)AuditEventTypes.ConnectSuccess, username);
 
-            // added user in dictionary to track dos attacks
-            lock (DoSAttackDetector.dosTracker)
-            { 
-                DoSAttackDetector.dosTracker.Add(username, 0);
-            }
-            
             return diffieHellman.PublicKey;
         }
 
@@ -62,10 +56,6 @@ namespace Service
 
             if (hosts.ContainsKey(address) || Blacklisted(decryptedPort, decryptedProtocol))
             {
-                lock (DoSAttackDetector.dosTracker)
-                {
-                    DoSAttackDetector.dosTracker[username]++;
-                }
                 Program.auditProxy.LogEvent((int)AuditEventTypes.RunServiceFailure, username);
                 Console.WriteLine("Service faild to run ...");
                 return false;

@@ -21,8 +21,8 @@ namespace Service
             Data data = new Data();
             data.ReadBlackListFile();
             data.CheckBlacklistTxt();
-            DoSAttackDetector detector = new DoSAttackDetector();
-            detector.DoSTrackerDetection();
+            //DoSAttackDetector detector = new DoSAttackDetector();
+            //detector.DoSTrackerDetection();
             auditProxy = ConnectAudit();
 
             NetTcpBinding binding = new NetTcpBinding();

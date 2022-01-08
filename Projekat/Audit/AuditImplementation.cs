@@ -18,6 +18,12 @@ namespace Audit
                     {
                         Manager.Audit.ConnectSuccess(username);
                         message = $"[ EVENT LOG ] [ INFO ] User \'{username}\' connected.";
+                        // added user in dictionary to track dos attacks
+                        lock (DoSAttackDetector.dosTracker)
+                        {
+                            DoSAttackDetector.dosTracker.Add(username, 0);
+                        }
+
                     }
                     catch (Exception e)
                     {
@@ -40,6 +46,10 @@ namespace Audit
                     {
                         Manager.Audit.RunServiceFailure(username);
                         message = $"[ EVENT LOG ] [ FAILURE ] User \'{username}\' failed to run service.";
+                        lock (DoSAttackDetector.dosTracker)
+                        {
+                            DoSAttackDetector.dosTracker[username]++;
+                        }
                     }
                     catch (Exception e)
                     {

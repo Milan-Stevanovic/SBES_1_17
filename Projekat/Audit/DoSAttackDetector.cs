@@ -7,7 +7,7 @@ using System.Threading;
 using System.Configuration;
 using System.Collections.Specialized;
 
-namespace Service
+namespace Audit
 {
     public class DoSAttackDetector
     {
@@ -29,6 +29,7 @@ namespace Service
             var thread = new Thread(() =>
             {
                 string user;
+                string message;
                 while (true)
                 {
                     for (int interval = 1; interval <= dosInterval; interval++)
@@ -41,9 +42,10 @@ namespace Service
 
                                 if ((dosTracker.ElementAt(i)).Value > allowedNumberOfDosAttacks)
                                 {
-                                    Program.auditProxy.LogEvent((int)AuditEventTypes.DoSAttackDetected, user);
+                                    Manager.Audit.DoSAttackDetected(user);
+                                    message = $"[ EVENT LOG ] [ INFO ] DoS attack detected by user \'{user}\'.";                                    
                                     dosTracker[user] = 0;
-                                    Console.WriteLine(" [DoS Attack Detected] by user: " + user);
+                                    Console.WriteLine(message);
                                 }
 
                                 // only on last piace of interval reset value to zero
